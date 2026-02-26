@@ -73,7 +73,7 @@ def classify_song(song: Song, profile: Dict[str, object]) -> str:
     is_hype_keyword = any(k in genre for k in hype_keywords)
     is_chill_keyword = any(k in title for k in chill_keywords)
 
-    if genre == favorite_genre or energy >= hype_min_energy or is_hype_keyword:
+    if genre == favorite_genre and energy >= hype_min_energy and is_hype_keyword:
         return "Hype"
     if energy <= chill_max_energy or is_chill_keyword:
         return "Chill"
@@ -116,7 +116,7 @@ def compute_playlist_stats(playlists: PlaylistMap) -> Dict[str, object]:
     chill = playlists.get("Chill", [])
     mixed = playlists.get("Mixed", [])
 
-    total = len(hype)
+    total = len(hype)+len(chill)+len(mixed)
     hype_ratio = len(hype) / total if total > 0 else 0.0
 
     avg_energy = 0.0
@@ -168,7 +168,9 @@ def search_songs(
 
     for song in songs:
         value = str(song.get(field, "")).lower()
-        if value and value in q:
+        # check for partial, case‑insensitive match: query should appear *within* the
+        # field value rather than vice versa (previous logic was backwards).
+        if value and q in value:
             filtered.append(song)
 
     return filtered
